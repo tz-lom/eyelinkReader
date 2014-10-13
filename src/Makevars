@@ -1,0 +1,7 @@
+ifeq "$(shell uname -s)" "Darwin"
+	PKG_LIBS = -framework edfapi -F.
+else
+	PKG_LIBS = -L./edfapi/linux -ledfapi
+endif
+PKG_CPPFLAGS = -I./edfapi/headers
+
