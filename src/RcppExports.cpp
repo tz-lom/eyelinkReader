@@ -6,14 +6,14 @@
 using namespace Rcpp;
 
 // edfReader
-SEXP edfReader(std::string fileName);
+List edfReader(std::string fileName);
 RcppExport SEXP eyelinkReader_edfReader(SEXP fileNameSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
         Rcpp::RNGScope __rngScope;
         Rcpp::traits::input_parameter< std::string >::type fileName(fileNameSEXP );
-        SEXP __result = edfReader(fileName);
+        List __result = edfReader(fileName);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);

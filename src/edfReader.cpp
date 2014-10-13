@@ -134,7 +134,7 @@ List edfReader(std::string fileName)
       CP(eupd_y);
     
       if(fd->fe.message)
-        eMessage.push_back(std::string(fd->fe.message));
+        eMessage.push_back(std::string(&fd->fe.message->c, fd->fe.message->len));
     
 #undef DO_COPY
       break;
@@ -200,60 +200,68 @@ List edfReader(std::string fileName)
   int begin = 0;
   int end = 0;
   
-#define C(name) _[#name] = name
+#define C(name) _samples[#name] = name;
   
-  DataFrame samples = DataFrame::create(
-      _["flags"] = sFlags,
-      _["input"] = sInput,
-      _["buttons"] = sButtons,
-//htype, hdata0, hdata1, hdata2, hdata3, hdata4, hdata5, hdata6, hdata7,
-      _["errors"] = sErrors,
-      C(pxL), 		C(pxR),
-      C(pyL), 		C(pyR),
-      C(hxL), 		C(hxR), C(hyL), C(hyR),
-      C(paL), 		C(paR),
-      C(gxL), 		C(gxR),
-      C(gyL), 		C(gyR),
-      C(rx), 		C(ry),
-      C(gxvelL, 	C(gxvelR),
-      C(gyvelL, 	C(gyvelR),
-      C(hxvelL, 	C(hxvelR),
-      C(hyvelL, 	C(hyvelR),
-      C(rxvelL, 	C(rxvelR),
-      C(ryvelL, 	C(ryvelR),
-      C(fgxvelL, 	C(fgxvelR),
-      C(fgyvelL, 	C(fgyvelR),
-      C(fhxvelL, 	C(fhxvelR),
-      C(fhyvelL, 	C(fhyvelR),
-      C(frxvelL, 	C(frxvelR),
-      C(fryvelL,	C(fryvelR)
-    );
-  DataFrame events = DataFrame::create(
-	  _["type"] = eType,
-	  _["stTime"] = eStTime,
-	  _["enTime"] = eEnTime,
+  List _samples;
+  _samples["flags"] = sFlags;
+  _samples["input"] = sInput;
+  _samples["buttons"] = sButtons;
+  _samples["htype"] = htype;
+  //_samples[hdata0, hdata1, hdata2, hdata3, hdata4, hdata5, hdata6, hdata7,
+  _samples["errors"] = sErrors;
+      C(pxL) 		C(pxR)
+      C(pyL) 		C(pyR)
+      C(hxL) 		C(hxR) C(hyL) C(hyR)
+      C(paL) 		C(paR)
+      C(gxL) 		C(gxR)
+      C(gyL) 		C(gyR)
+      C(rx) 		  C(ry)
+      C(gxvelL) 	C(gxvelR)
+      C(gyvelL) 	C(gyvelR)
+      C(hxvelL) 	C(hxvelR)
+      C(hyvelL) 	C(hyvelR)
+      C(rxvelL) 	C(rxvelR)
+      C(ryvelL) 	C(ryvelR)
+      C(fgxvelL) 	C(fgxvelR)
+      C(fgyvelL) 	C(fgyvelR)
+      C(fhxvelL) 	C(fhxvelR)
+      C(fhyvelL)	C(fhyvelR)
+      C(frxvelL)	C(frxvelR)
+      C(fryvelL)	C(fryvelR)
+      
+  DataFrame samples(_samples);
+
+#define C(name) _events[#name] = name;
+
+  List _events;
+	_events["type"] = eType;
+	_events["stTime"] = eStTime;
+    
+	    _["enTime"] = eEnTime,
       _["status"] = eStatus,
- 	  _["flags"] = eFlags,
- 	  _["input"] = eInput, 
-	  _["buttons"] = eButtons,
+   	  _["flags"] = eFlags,
+   	  _["input"] = eInput, 
+  	  _["buttons"] = eButtons,
       _["parsedBy"] = eParsedBy,
       _["message"] = eMessage,
 
-		hstx, hsty,
-		gstx, gsty,
-		sta,
-		henx, heny,
-		genx, geny,
-		ena,
-		havx, havy,
-		gavx, gavy,
-		ava,
-		avel,
-		pvel,
-		svel, evel,
-		supd_x, eupd_x,
-		supd_y, eupd_y
-  );
+  		C(hstx)    C(hsty)
+  		C(gstx)    C(gsty)
+  		C(sta)
+  		C(henx)    C(heny)
+  		C(genx)    C(geny)
+  		C(ena)
+  		C(havx)    C(havy)
+  		C(gavx)    C(gavy)
+  		C(ava)
+  		C(avel)
+  		C(pvel)
+  		C(svel)    C(evel)
+  		C(supd_x)  C(eupd_x)
+  		C(supd_y)  C(eupd_y)
+      
+    DataFrame events(_events);
+      
 
   return List::create(
       _["samples"] = samples,
