@@ -65,7 +65,66 @@ List edfReader(std::string fileName)
     ;
     
   // @todo: preallocate all that shit
+#define P(name) name.reserve(p_size)
 
+  int p_size = edf_get_element_count(file);
+  
+  P(sTime);
+  P(sFlags);
+  P(sInput);
+  P(sButtons);
+    
+  P(htype);
+  P(hdata0);
+  P(hdata1);
+  P(hdata2);
+  P(hdata3);
+  P(hdata4);
+  P(hdata5);
+  P(hdata6);
+  P(hdata7);
+  P(sErrors);
+  
+  P(pxL); P(pxR); P(pyL); P(pyR);
+  P(hxL); P(hxR); P(hyL); P(hyR);
+  P(paL); P(paR);
+  P(gxL); P(gxR);
+  P(gyL); P(gyR);
+  P(rx); P(ry);
+  P(gxvelL); P(gxvelR);
+  P(gyvelL); P(gyvelR);
+  P(hxvelL); P(hxvelR);
+  P(hyvelL); P(hyvelR);
+  P(rxvelL); P(rxvelR);
+  P(ryvelL); P(ryvelR);
+  P(fgxvelL); P(fgxvelR);
+  P(fgyvelL); P(fgyvelR);
+  P(fhxvelL); P(fhxvelR);
+  P(fhyvelL); P(fhyvelR);
+  P(frxvelL); P(frxvelR);
+  P(fryvelL); P(fryvelR);
+  
+   P(eTime); P( eType); 
+    P(eStTime); P( eEnTime); 
+    P(eStatus); P( eFlags); P( eInput); P( eButtons); 
+    P(eParsedBy);
+    P(eMessage);
+    P(hstx); P( hsty); 
+    P(gstx); P( gsty); 
+    P(sta); 
+    P(henx); P( heny); 
+    P(genx); P( geny); 
+    P(ena); 
+    P(havx); P( havy); 
+    P(gavx); P( gavy); 
+    P(ava); 
+    P(avel); 
+    P(pvel); 
+    P(svel); P( evel); 
+    P(supd_x); P( eupd_x); 
+    P(supd_y); P( eupd_y);
+  
+#undef P
 
   if(!file || err) return R_NilValue;
   int type;
@@ -231,6 +290,7 @@ List edfReader(std::string fileName)
       
   DataFrame samples(_samples);
 
+#undef C
 #define C(name) _events[#name] = name;
 
   List _events;
