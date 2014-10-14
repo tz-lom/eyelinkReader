@@ -9,6 +9,8 @@ List edfReader(std::string fileName)
 
   int err;
   EDFFILE *file = edf_open_file(fileName.c_str(), 1, 1, 1, &err);
+  if(!file || err) return R_NilValue;
+
 
   std::vector<int>
     sTime, sFlags,
@@ -63,6 +65,7 @@ List edfReader(std::string fileName)
     supd_x, eupd_x,
     supd_y, eupd_y
     ;
+  List begin, end;
     
   // @todo: preallocate all that shit
 #define P(name) name.reserve(p_size)
@@ -126,7 +129,6 @@ List edfReader(std::string fileName)
   
 #undef P
 
-  if(!file || err) return R_NilValue;
   int type;
   while((type = edf_get_next_data(file)) != NO_PENDING_ITEMS)
   {
@@ -194,12 +196,34 @@ List edfReader(std::string fileName)
     
       if(fd->fe.message)
         eMessage.push_back(std::string(&fd->fe.message->c, fd->fe.message->len));
+      else
+        eMessage.push_back(std::string());
     
 #undef DO_COPY
       break;
       
     case RECORDING_INFO:
-      fd->rec;
+      {
+        List *obj;
+        if(fd->rec.state==1)
+        {
+          //start
+          obj = &begin;
+        }
+        else
+        {
+          //end
+          obj = &end;
+        }
+        (*obj)["time"] = fd->rec.time;
+        (*obj)["record"] = fd->rec.record_type;
+        (*obj)["pupil"] = fd->rec.pupil_type;
+        (*obj)["mode"] = fd->rec.recording_mode;
+        (*obj)["filter"] = fd->rec.filter_type;
+        (*obj)["sampleRate"] = fd->rec.sample_rate;
+        (*obj)["type"] = fd->rec.pos_type;
+        (*obj)["eyes"] = fd->rec.eye;
+      }
       break;
     
     case SAMPLE_TYPE: 
@@ -255,9 +279,6 @@ List edfReader(std::string fileName)
 #undef COD
   edf_close_file(file);
 
-
-  int begin = 0;
-  int end = 0;
   
 #define C(name) _samples[#name] = name;
   
@@ -297,13 +318,13 @@ List edfReader(std::string fileName)
 	_events["type"] = eType;
 	_events["stTime"] = eStTime;
     
-	    _["enTime"] = eEnTime,
-      _["status"] = eStatus,
-   	  _["flags"] = eFlags,
-   	  _["input"] = eInput, 
-  	  _["buttons"] = eButtons,
-      _["parsedBy"] = eParsedBy,
-      _["message"] = eMessage,
+	    _events["enTime"] = eEnTime,
+      _events["status"] = eStatus,
+   	  _events["flags"] = eFlags,
+   	  _events["input"] = eInput, 
+  	  _events["buttons"] = eButtons,
+      _events["parsedBy"] = eParsedBy,
+      _events["message"] = eMessage,
 
   		C(hstx)    C(hsty)
   		C(gstx)    C(gsty)
