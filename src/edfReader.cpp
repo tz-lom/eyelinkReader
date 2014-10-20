@@ -3,7 +3,7 @@ using namespace Rcpp;
 
 #include <edf.h>
 
-// [[Rcpp::export]]
+// [[Rcpp::export("read.edf")]]
 List edfReader(std::string fileName)
 {
 
@@ -161,7 +161,28 @@ List edfReader(std::string fileName)
 #define DO_COPY(TO, FROM) TO.push_back(fd->fe.FROM)    
 
       DO_COPY(eTime, time);
-      DO_COPY(eType, type);
+      {
+        int cType[] = {
+        /*    /  0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F */
+        /* 1 */  1, 2, 3, 4, 5, 6, 7, 8, 9,10,11, 1, 1, 1, 1,12,
+        /* 1 */ 13,14,15, 1, 1, 1, 1, 1,16,17, 1, 1,18, 1, 1, 1,
+        /* 2 */  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        /* 3 */  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,19,
+        /* 4 */  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        /* 5 */  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        /* 6 */  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        /* 7 */  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        /* 8 */  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        /* 9 */  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        /* A */  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        /* B */  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        /* C */  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        /* D */  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        /* E */  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        /* F */  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+        };
+        eType.push_back(cType[type]);
+      }
       DO_COPY(eStTime, sttime);
       DO_COPY(eEnTime, entime);
       DO_COPY(eStatus, status);
@@ -280,15 +301,17 @@ List edfReader(std::string fileName)
   edf_close_file(file);
 
   
-#define C(name) _samples[#name] = name;
+#define C(name) { NumericVector vec = wrap(name); _samples[#name] = ifelse(vec == MISSING_DATA, NA_REAL, vec) ; }
   
   List _samples;
+  _samples["time"] = sTime;
   _samples["flags"] = sFlags;
   _samples["input"] = sInput;
   _samples["buttons"] = sButtons;
   _samples["htype"] = htype;
   //_samples[hdata0, hdata1, hdata2, hdata3, hdata4, hdata5, hdata6, hdata7,
   _samples["errors"] = sErrors;
+  
       C(pxL) 		C(pxR)
       C(pyL) 		C(pyR)
       C(hxL) 		C(hxR) C(hyL) C(hyR)
@@ -312,10 +335,37 @@ List edfReader(std::string fileName)
   DataFrame samples(_samples);
 
 #undef C
-#define C(name) _events[#name] = name;
+#define C(name) { NumericVector vec = wrap(name); _events[#name] = ifelse(vec == MISSING_DATA, NA_REAL, vec) ; }
 
   List _events;
-	_events["type"] = eType;
+  _events["time"] = eTime;
+  
+  IntegerVector vType = wrap(eType);
+  vType.attr("levels") =  
+    CharacterVector::create(
+      "",
+      "startparse",
+      "endparse",
+      "startblink",
+      "endblink",
+      "startsacc",
+      "endsacc",
+      "startfix",
+      "endfix",
+      "fixupdate",
+      "breakparse",
+      "startsamples",
+      "endsamples",
+      "startevents",
+      "endevents",
+      "message",
+      "button",
+      "input",
+      "lostData"
+      );
+  vType.attr("class") = "factor";
+  _events["type"] = vType;
+  
 	_events["stTime"] = eStTime;
     
 	    _events["enTime"] = eEnTime,
@@ -324,7 +374,7 @@ List edfReader(std::string fileName)
    	  _events["input"] = eInput, 
   	  _events["buttons"] = eButtons,
       _events["parsedBy"] = eParsedBy,
-      _events["message"] = eMessage,
+      _events["message"] = eMessage;
 
   		C(hstx)    C(hsty)
   		C(gstx)    C(gsty)
@@ -342,7 +392,6 @@ List edfReader(std::string fileName)
   		C(supd_y)  C(eupd_y)
       
     DataFrame events(_events);
-      
 
   return List::create(
       _["samples"] = samples,
