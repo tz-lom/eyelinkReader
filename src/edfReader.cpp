@@ -6,7 +6,6 @@ using namespace Rcpp;
 // [[Rcpp::export("read.edf")]]
 List edfReader(std::string fileName)
 {
-
   int err;
   EDFFILE *file = edf_open_file(fileName.c_str(), 1, 1, 1, &err);
   if(!file || err) return R_NilValue;
@@ -308,10 +307,11 @@ List edfReader(std::string fileName)
   _samples["flags"] = sFlags;
   _samples["input"] = sInput;
   _samples["buttons"] = sButtons;
-  _samples["htype"] = htype;
+  
   //_samples[hdata0, hdata1, hdata2, hdata3, hdata4, hdata5, hdata6, hdata7,
   _samples["errors"] = sErrors;
   
+  C(htype)
       C(pxL) 		C(pxR)
       C(pyL) 		C(pyR)
       C(hxL) 		C(hxR) C(hyL) C(hyR)

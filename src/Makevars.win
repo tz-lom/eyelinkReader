@@ -8,7 +8,7 @@ clean:
 
 
 ifeq "$(WIN)" "64"
-PKG_LIBS = -L./edfapi/win64 -ledfapi64
+PKG_LIBS = -L./edfapi/win64 -ledfapi64 -lzlibwapi
 edfapi:
 	cp ./edfapi/win64/*.dll ./
 
