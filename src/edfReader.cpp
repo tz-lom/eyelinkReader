@@ -306,12 +306,14 @@ List edfReader(std::string fileName)
   _samples["time"] = sTime;
   _samples["flags"] = sFlags;
   _samples["input"] = sInput;
+  
+  { IntegerVector vec = wrap(htype); _samples["htype"] = ifelse(vec == MISSING_DATA, NA_INTEGER, vec); }
+  
   _samples["buttons"] = sButtons;
   
   //_samples[hdata0, hdata1, hdata2, hdata3, hdata4, hdata5, hdata6, hdata7,
   _samples["errors"] = sErrors;
   
-  C(htype)
       C(pxL) 		C(pxR)
       C(pyL) 		C(pyR)
       C(hxL) 		C(hxR) C(hyL) C(hyR)
