@@ -58,6 +58,7 @@ typedef struct
 	int Utf8BOM;
 	int disable_large_time_stamp_check;
 	int allow_raw;
+	int disable_pa_check;
 
 }Opt;
 

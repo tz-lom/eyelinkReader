@@ -49,6 +49,11 @@
 /* correct sizes.			      */
 
 
+
+/*!
+    \file edf_data.h
+ */
+
 #ifndef BYTEDEF
   #include "edftypes.h"
 #endif
@@ -129,12 +134,14 @@ extern "C" {
 #if defined(_M_X64) || defined(__x86_64__) // pack to 1 byte otherwise crashes on matlab
 #pragma pack(1)
 #endif
+
+///@cond TEST
 typedef struct {
                 INT16 len;
                 char c;
                } LSTRING;
 #endif
-
+///@endcond
 
 #ifndef FSAMPLEDEF	/* FLOATING-POINT SAMPLE */
 #define FSAMPLEDEF 1    /* gaze, resolution prescaling removed */
@@ -142,44 +149,59 @@ typedef struct {
 #pragma pack(1)
 #endif
 
+
+/*!\page classIntro
+ * The EyeLink EDF access API (edfapi.dll) library defines a number of data types that are 
+ * used for data reading, found in eye_data.h and edf.h. The useful parts of these structures 
+ * are discussed in the following sections. */
+
+
+
+/*! The FSAMPLE structure holds information for a sample in the EDF file. 
+ * Depending on the recording options set for the recording session, 
+ * some of the fields may be empty.*/
+
 typedef struct {
-		 UINT32 time;   /* time of sample */
-		 /*INT16  type; */	/* always SAMPLE_TYPE */
-
+		 UINT32 time;   /*!< time stamp of sample */
+		 /*INT16  type; */	/* always SAMPLE_TYPE */ 
 		 
 
-		 float  px[2], py[2];    /* pupil xy */
-		 float  hx[2], hy[2];    /* headref xy */
-		 float  pa[2]; 		 /* pupil size or area */
+		 float  px[2];   /*!< pupil x */
+		 float  py[2];   /*!< pupil y */
+		 float  hx[2];   /*!< headref x */
+		 float  hy[2];   /*!< headref y */
+		 float  pa[2]; 	 /*!< pupil size or area */
 
-		 float gx[2], gy[2];    /* screen gaze xy */
-		 float rx, ry;          /* screen pixels per degree */
+		 float gx[2];    /*!< screen gaze x */
+		 float gy[2];    /*!< screen gaze y */
+		 float rx;       /*!< screen pixels per degree */
+		 float ry;       /*!< screen pixels per degree */
 
 		 
-		 float gxvel[2];
-		 float gyvel[2];
-		 float hxvel[2];
-		 float hyvel[2];
-		 float rxvel[2];
-		 float ryvel[2];
+		 float gxvel[2];  /*!< gaze x velocity */
+		 float gyvel[2];  /*!< gaze y velocity */
+		 float hxvel[2];  /*!< headref x velocity */
+		 float hyvel[2];  /*!< headref y velocity */
+		 float rxvel[2];  /*!< raw x velocity */
+		 float ryvel[2];  /*!< raw y velocity */
 
-		 float fgxvel[2];
-		 float fgyvel[2];
-		 float fhxvel[2];
-		 float fhyvel[2];
-		 float frxvel[2];
-		 float fryvel[2];
+		 float fgxvel[2]; /*!< fast gaze x velocity */
+		 float fgyvel[2]; /*!< fast gaze y velocity */
+		 float fhxvel[2]; /*!< fast headref x velocity */
+		 float fhyvel[2]; /*!< fast headref y velocity */
+		 float frxvel[2]; /*!< fast raw x velocity */
+		 float fryvel[2]; /*!< fast raw y velocity */
 
-		 INT16  hdata[8];  /* head-tracker data (not prescaled) */
-		 UINT16 flags;  /* flags to indicate contents */
+		 INT16  hdata[8];  /*!< head-tracker data (not pre-scaled) */
+		 UINT16 flags;     /*!<  flags to indicate contents */
 		 
-		 //UINT16 status;       /* tracker status flags    */
-		 UINT16 input;        /* extra (input word)      */
-		 UINT16 buttons;      /* button state & changes  */
+		 //UINT16 status;       /* tracker status flags    */ 
+		 UINT16 input;     /*!< extra (input word) */
+		 UINT16 buttons;   /*!< button state & changes */
 
-		 INT16  htype;     /* head-tracker data type (0=none)   */
+		 INT16  htype;     /*!< head-tracker data type (0=none) */
 		 
-		 UINT16 errors;       /* process error flags */
+		 UINT16 errors;    /*!< process error flags */
 
 } FSAMPLE;
 #endif
@@ -194,35 +216,49 @@ typedef struct {
 #pragma pack(1)
 #endif
 
+/*!The FEVENT structure holds information for an event in the EDF file. 
+ * Depending on the recording options set for the recording session and the event type, 
+ * some of the fields may be empty.*/
+
 typedef struct  {
-		UINT32 time;       /* effective time of event */
-		INT16  type;       /* event type */
-		UINT16 read;       /* flags which items were included */
+		UINT32 time;       /*!< effective time of event */
+		INT16  type;       /*!< event type */
+		UINT16 read;       /*!< flags which items were included */
 
 
-		UINT32 sttime, entime;   /* start, end times */
-		float  hstx, hsty;       /* starting points */
-		float  gstx, gsty;       /* starting points */
-		float  sta;
-		float  henx, heny;       /* ending points */
-		float  genx, geny;       /* ending points */
-		float  ena;
-		float  havx, havy;       /* averages */
-		float  gavx, gavy;       /* averages */
-		float  ava;
-		float  avel;             /* avg velocity accum */
-		float  pvel;             /* peak velocity accum */
-		float  svel, evel;       /* start, end velocity */
-		float  supd_x, eupd_x;   /* start, end units-per-degree */
-		float  supd_y, eupd_y;   /* start, end units-per-degree */
+		UINT32 sttime;   /*!< start time of the event */
+		UINT32 entime;   /*!< end time of the event*/
+		float  hstx;     /*!< headref starting points */ 
+		float  hsty;     /*!< headref starting points */
+		float  gstx;     /*!< gaze starting points */
+		float  gsty;     /*!< gaze starting points */
+		float  sta;      /*!< pupil size at start */
+		float  henx;     /*!<  headref ending points */
+		float  heny;     /*!<  headref ending points */
+		float  genx;     /*!< gaze ending points */
+		float  geny;     /*!< gaze ending points */
+		float  ena;       /*!< pupil size at end */
+		float  havx;     /*!< headref averages */
+		float  havy;     /*!< headref averages */
+		float  gavx;     /*!< gaze averages */
+		float  gavy;     /*!< gaze averages */
+		float  ava;       /*!< average pupil size */
+		float  avel;     /*!< accumulated average velocity */
+		float  pvel;     /*!< accumulated peak velocity */
+		float  svel;     /*!< start velocity */
+		float evel;      /*!< end velocity */
+		float  supd_x;   /*!< start units-per-degree */
+		float  eupd_x;   /*!< end units-per-degree */
+		float  supd_y;   /*!< start units-per-degree */
+		float  eupd_y;   /*!< end units-per-degree */
 
-		INT16  eye;        /* eye: 0=left,1=right */
-		UINT16 status;           /* error, warning flags */
-		UINT16 flags;           /* error, warning flags*/
+		INT16  eye;        /*!< eye: 0=left,1=right */
+		UINT16 status;           /*!< error, warning flags */
+		UINT16 flags;           /*!< error, warning flags*/
 		UINT16 input;
 		UINT16 buttons;
-		UINT16 parsedby;       /* 7 bits of flags: PARSEDBY codes*/
-		LSTRING *message;		/* any message string*/
+		UINT16 parsedby;       /*!< 7 bits of flags: PARSEDBY codes*/
+		LSTRING *message;		/*!< any message string*/
 		} FEVENT;
 #endif
 
@@ -235,6 +271,7 @@ typedef struct  {
 #pragma pack(1)
 #endif
 
+ /// @cond REMOVE
 typedef struct  {
 		UINT32 time;       /* time message logged */
 		INT16  type;       /* event type: usually MESSAGEEVENT */
@@ -243,7 +280,7 @@ typedef struct  {
 		byte   text[260];  /* message contents (max length 255) */
 		} IMESSAGE;
 #endif
-
+ /// @endcond
 			/* button, input, other simple events */
 #ifndef IOEVENTDEF
 #define IOEVENTDEF
@@ -251,6 +288,8 @@ typedef struct  {
 #pragma pack(1)
 #endif
 
+
+/// @cond TEST
 typedef struct  {
 		UINT32 time;       /* time logged */
 		INT16  type;       /* event type: */
@@ -258,6 +297,7 @@ typedef struct  {
 		UINT16 data;	   /* coded event data */
 		} IOEVENT;
 #endif
+/// @endcond
 
 #ifndef __RECORDINGS___
 #define __RECORDINGS___
@@ -265,19 +305,26 @@ typedef struct  {
 #pragma pack(1)
 #endif
 
+/*! The RECORDINGS structure holds information about a recording block in an EDF file. 
+ * A RECORDINGS structure is present at the start of recording and the end of recording. 
+ * Conceptually a RECORDINGS structure is similar to the START and END lines inserted in an EyeLink ASC file. 
+ * RECORDINGS with a state field = 0 represent the end of a recording block, and contain information regarding 
+ * the recording options set before recording was initiated. */
+
+
 typedef struct
 {
-	UINT32 time;		/* start time or end time*/
-	float sample_rate; /* 250 or 500 or 1000*/
-	UINT16 eflags;       /* to hold extra information about events */
-	UINT16 sflags;       /* to hold extra information about samples */
-	byte state;			/* 0 = END, 1=START */
-	byte record_type;	/* 1 = SAMPLES, 2= EVENTS, 3= SAMPLES and EVENTS*/
-	byte pupil_type;	/* 0 = AREA, 1 = DIAMETER*/
-	byte recording_mode;/* 0 = PUPIL, 1 = CR */
-	byte filter_type;   /* 1,2,3 */	
-	byte  pos_type;		/*PARSEDBY_GAZE  PARSEDBY_HREF PARSEDBY_PUPIL*/
-	byte eye;			/* 1=LEFT, 2=RIGHT, 3=LEFT and RIGHT */
+	UINT32 time;		/*!< start time or end time*/
+	float sample_rate;  /*!< 250 or 500 or 1000*/
+	UINT16 eflags;      /*!< to hold extra information about events */
+	UINT16 sflags;      /*!< to hold extra information about samples */
+	byte state;			/*!< 0 = END, 1=START */
+	byte record_type;	/*!< 1 = SAMPLES, 2= EVENTS, 3= SAMPLES and EVENTS*/
+	byte pupil_type;	/*!< 0 = AREA, 1 = DIAMETER*/
+	byte recording_mode;/*!< 0 = PUPIL, 1 = CR */
+	byte filter_type;   /*!< 1,2,3 */	
+	byte  pos_type;		/*!<0 = GAZE, 1= HREF, 2 = RAW*/  /*PARSEDBY_GAZE  PARSEDBY_HREF PARSEDBY_PUPIL*/
+	byte eye;			/*!< 1=LEFT, 2=RIGHT, 3=LEFT and RIGHT */
 
 
 }RECORDINGS;
@@ -291,6 +338,9 @@ typedef struct
 #if defined(_M_X64) || defined(__x86_64__) // pack to 1 byte otherwise crashes on matlab
 #pragma pack(1)
 #endif
+
+/*!Any one of the above three data types can be read into a buffer of type ALLF_DATA, which is 
+ * a union of the event, sample, and recording buffer formats:*/
 
 typedef union {
 		FEVENT    fe;

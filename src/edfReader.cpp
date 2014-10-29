@@ -2,6 +2,7 @@
 using namespace Rcpp;
 
 #include <edf.h>
+#include <opt.h>
 
 // [[Rcpp::export("read.edf")]]
 List edfReader(std::string fileName)
@@ -17,8 +18,8 @@ List edfReader(std::string fileName)
     htype, hdata0, hdata1, hdata2, hdata3, hdata4, hdata5, hdata6, hdata7,
     sErrors
     ;
-  
-  std::vector<double>
+//  
+  std::vector<float>
     pxL, pxR, pyL, pyR,
     hxL, hxR, hyL, hyR,
     paL, paR,
@@ -48,7 +49,7 @@ List edfReader(std::string fileName)
   std::vector<std::string>
     eMessage
     ;
-  std::vector<double>
+  std::vector<float>
     hstx, hsty,
     gstx, gsty,
     sta,
@@ -265,6 +266,7 @@ List edfReader(std::string fileName)
       DO_COPY(hdata7, hdata[7]);
       DO_COPY(sErrors, errors);
       
+      
       COD(px);
       COD(py);
       COD(hx);
@@ -299,8 +301,8 @@ List edfReader(std::string fileName)
 #undef COD
   edf_close_file(file);
 
-  
-#define C(name) { NumericVector vec = wrap(name); _samples[#name] = ifelse(vec == MISSING_DATA, NA_REAL, vec) ; }
+// dickheads from SR research found funny to use two types of NaN for pointing missed data
+#define C(name) { NumericVector vec = wrap(name); _samples[#name] = ifelse((vec == NaN) + (vec == MISSING_DATA), NA_REAL, vec) ; }  
   
   List _samples;
   _samples["time"] = sTime;
@@ -337,7 +339,7 @@ List edfReader(std::string fileName)
   DataFrame samples(_samples);
 
 #undef C
-#define C(name) { NumericVector vec = wrap(name); _events[#name] = ifelse(vec == MISSING_DATA, NA_REAL, vec) ; }
+#define C(name) { NumericVector vec = wrap(name); _events[#name] = ifelse(vec == NaN, NA_REAL, vec) ; }
 
   List _events;
   _events["time"] = eTime;
