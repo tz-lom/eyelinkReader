@@ -1,7 +1,34 @@
+.PHONY: all edfapi
+
+all: $(SHLIB)
+$(SHLIB): edfapi
+
+clean:
+	rm ./*.so
+
 ifeq "$(shell uname -s)" "Darwin"
-	PKG_LIBS = -framework edfapi -F.
+
+PKG_LIBS = -framework edfapi -F.
+
 else
-	PKG_LIBS = -L./edfapi/linux -ledfapi
+
+ifeq "$(R_PLATFORM)" "x86_64-pc-linux-gnu"
+
+PKG_LIBS = -L./edfapi/linux64 -ledfapi -lm
+edfapi:
+	cp ./edfapi/linux64/libedfapi.so.masked ./libedfapi.so
+
+else
+
+PKG_LIBS = -L./edfapi/linux32 -ledfapi -lm
+edfapi:
+	cp ./edfapi/linux32/libedfapi.so.masked ./libedfapi.so
+
+
 endif
+
+endif
+
+
 PKG_CPPFLAGS = -I./edfapi/headers
 
