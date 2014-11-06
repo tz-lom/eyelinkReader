@@ -1,16 +1,25 @@
-.PHONY: all edfapi
+.PHONY: all clean edfapi
 
 all: $(SHLIB)
 $(SHLIB): edfapi
 
-clean:
-	rm ./*.so
-
 ifeq "$(shell uname -s)" "Darwin"
 
-PKG_LIBS = -framework edfapi -F.
+PKG_LIBS = -framework edfapi -F./edfapi/macosx
+
+LIBDIR=../inst/libs
+
+clean:
+	rm -rf $(OBJECTS) $(SHLIB) $(LIBDIR)
+
+edfapi:
+	-@if test ! -e $(LIBDIR)$(R_ARCH); then mkdir -p $(LIBDIR)$(R_ARCH); fi
+	cp -r ./edfapi/macosx/edfapi.framework $(LIBDIR)$(R_ARCH)
 
 else
+
+clean:
+	rm -f $(OBJECTS) $(SHLIB)
 
 ifeq "$(R_PLATFORM)" "x86_64-pc-linux-gnu"
 

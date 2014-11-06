@@ -1,4 +1,3 @@
 useDynLib(eyelinkReader)
-exportPattern("^[[:alpha:]]+")
+export("read.edf")
 importFrom(Rcpp, evalCpp)
-import(stringr)
