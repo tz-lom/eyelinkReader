@@ -21,7 +21,7 @@ else
 clean:
 	rm -f $(OBJECTS) $(SHLIB)
 
-ifeq "$(R_PLATFORM)" "x86_64-pc-linux-gnu"
+ifeq "$(shell echo $(R_PLATFORM) |grep -o 64)" "64"
 
 PKG_LIBS = -L./edfapi/linux64 -ledfapi -lm
 edfapi:
