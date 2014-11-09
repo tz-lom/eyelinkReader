@@ -3,11 +3,11 @@
 all: $(SHLIB)
 $(SHLIB): edfapi
 
+LIBDIR=../inst/libs
+
 ifeq "$(shell uname -s)" "Darwin"
 
 PKG_LIBS = -framework edfapi -F./edfapi/macosx
-
-LIBDIR=../inst/libs
 
 clean:
 	rm -rf $(OBJECTS) $(SHLIB) $(LIBDIR)
