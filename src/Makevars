@@ -25,13 +25,15 @@ ifeq "$(shell echo $(R_PLATFORM) |grep -o 64)" "64"
 
 PKG_LIBS = -L./edfapi/linux64 -ledfapi -lm
 edfapi:
-	cp ./edfapi/linux64/libedfapi.so.masked ./libedfapi.so
+  -@if test ! -e $(LIBDIR)$(R_ARCH); then mkdir -p $(LIBDIR)$(R_ARCH); fi
+	cp ./edfapi/linux64/libedfapi.so.masked $(LIBDIR)$(R_ARCH)/libedfapi.so
 
 else
 
 PKG_LIBS = -L./edfapi/linux32 -ledfapi -lm
 edfapi:
-	cp ./edfapi/linux32/libedfapi.so.masked ./libedfapi.so
+	-@if test ! -e $(LIBDIR)$(R_ARCH); then mkdir -p $(LIBDIR)$(R_ARCH); fi
+	cp ./edfapi/linux32/libedfapi.so.masked $(LIBDIR)$(R_ARCH)/libedfapi.so
 
 
 endif
