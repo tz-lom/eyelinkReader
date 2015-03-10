@@ -4,6 +4,52 @@ using namespace Rcpp;
 #include <edf.h>
 #include <opt.h>
 
+class ListBuilder {
+
+public:
+
+  ListBuilder() {};
+  ~ListBuilder() {};
+
+  inline ListBuilder& add(const std::string& name, SEXP x) {
+    names.push_back(name);
+    elements.push_back(PROTECT(x));
+    return *this;
+  }
+
+  template <typename T>
+  inline ListBuilder& add(const std::string& name, const T& x) {
+    names.push_back(name);
+    elements.push_back(PROTECT(wrap(x)));
+    return *this;
+  }
+
+  inline operator List() const {
+    List result(elements.size());
+    for (size_t i = 0; i < elements.size(); ++i) {
+      result[i] = elements[i];
+    }
+    result.attr("names") = wrap(names);
+    UNPROTECT(elements.size());
+    return result;
+  }
+
+  inline operator DataFrame() const {
+    List result = static_cast<List>(*this);
+    result.attr("class") = "data.frame";
+    result.attr("row.names") = IntegerVector::create(NA_INTEGER, XLENGTH(elements[0]));
+    return result;
+  }
+
+private:
+
+  std::vector<std::string> names;
+  std::vector<SEXP> elements;
+
+  ListBuilder(ListBuilder const&) {};
+
+};
+
 // [[Rcpp::export("read.edf")]]
 List edfReader(std::string fileName)
 {
@@ -65,7 +111,7 @@ List edfReader(std::string fileName)
     supd_x, eupd_x,
     supd_y, eupd_y
     ;
-  List begin, end;
+  ListBuilder _begin, _end;
     
   // @todo: preallocate all that shit
 #define P(name) name.reserve(p_size)
@@ -225,25 +271,25 @@ List edfReader(std::string fileName)
       
     case RECORDING_INFO:
       {
-        List *obj;
+        ListBuilder *obj;
         if(fd->rec.state==1)
         {
           //start
-          obj = &begin;
+          obj = &_begin;
         }
         else
         {
           //end
-          obj = &end;
+          obj = &_end;
         }
-        (*obj)["time"] = fd->rec.time;
-        (*obj)["record"] = fd->rec.record_type;
-        (*obj)["pupil"] = fd->rec.pupil_type;
-        (*obj)["mode"] = fd->rec.recording_mode;
-        (*obj)["filter"] = fd->rec.filter_type;
-        (*obj)["sampleRate"] = fd->rec.sample_rate;
-        (*obj)["type"] = fd->rec.pos_type;
-        (*obj)["eyes"] = fd->rec.eye;
+        (*obj).add("time", fd->rec.time);
+        (*obj).add("record", fd->rec.record_type);
+        (*obj).add("pupil", fd->rec.pupil_type);
+        (*obj).add("mode", fd->rec.recording_mode);
+        (*obj).add("filter", fd->rec.filter_type);
+        (*obj).add("sampleRate", fd->rec.sample_rate);
+        (*obj).add("type", fd->rec.pos_type);
+        (*obj).add("eyes", fd->rec.eye);
       }
       break;
     
@@ -296,25 +342,28 @@ List edfReader(std::string fileName)
       break;
     }
   }
+  
+  List begin = _begin,
+       end = _end;
    
 #undef CP
 #undef COD
   edf_close_file(file);
 
 // dickheads from SR research found funny to use two types of NaN for pointing missed data
-#define C(name) { NumericVector vec = wrap(name); _samples[#name] = ifelse((vec == NaN) + (vec == MISSING_DATA), NA_REAL, vec) ; }  
+#define C(name) { NumericVector vec = wrap(name); _samples.add(#name, ifelse((vec == NaN) + (vec == MISSING_DATA), NA_REAL, vec)) ; }  
   
-  List _samples;
-  _samples["time"] = sTime;
-  _samples["flags"] = sFlags;
-  _samples["input"] = sInput;
+  ListBuilder _samples;
+  _samples.add("time", sTime);
+  _samples.add("flags", sFlags);
+  _samples.add("input", sInput);
   
-  { IntegerVector vec = wrap(htype); _samples["htype"] = ifelse(vec == MISSING_DATA, NA_INTEGER, vec); }
+  { IntegerVector vec = wrap(htype); _samples.add("htype", ifelse(vec == MISSING_DATA, NA_INTEGER, vec)); }
   
-  _samples["buttons"] = sButtons;
+  _samples.add("buttons", sButtons);
   
   //_samples[hdata0, hdata1, hdata2, hdata3, hdata4, hdata5, hdata6, hdata7,
-  _samples["errors"] = sErrors;
+  _samples.add("errors", sErrors);
   
       C(pxL) 		C(pxR)
       C(pyL) 		C(pyR)
@@ -336,13 +385,14 @@ List edfReader(std::string fileName)
       C(frxvelL)	C(frxvelR)
       C(fryvelL)	C(fryvelR)
       
-  DataFrame samples(_samples);
+  DataFrame samples = _samples;
 
 #undef C
-#define C(name) { NumericVector vec = wrap(name); _events[#name] = ifelse(vec == NaN, NA_REAL, vec) ; }
+#define C(name) { NumericVector vec = wrap(name); _events.add(#name, ifelse(vec == NaN, NA_REAL, vec)) ; }
 
-  List _events;
-  _events["time"] = eTime;
+  ListBuilder _events;
+  
+  _events.add("time", eTime);
   
   IntegerVector vType = wrap(eType);
   vType.attr("levels") =  
@@ -368,17 +418,17 @@ List edfReader(std::string fileName)
       "lostData"
       );
   vType.attr("class") = "factor";
-  _events["type"] = vType;
+  _events.add("type", vType);
   
-	_events["stTime"] = eStTime;
+	_events.add("stTime", eStTime);
     
-	    _events["enTime"] = eEnTime,
-      _events["status"] = eStatus,
-   	  _events["flags"] = eFlags,
-   	  _events["input"] = eInput, 
-  	  _events["buttons"] = eButtons,
-      _events["parsedBy"] = eParsedBy,
-      _events["message"] = eMessage;
+	    _events.add("enTime", eEnTime);
+      _events.add("status", eStatus);
+   	  _events.add("flags", eFlags);
+   	  _events.add("input", eInput);
+  	  _events.add("buttons", eButtons);
+      _events.add("parsedBy", eParsedBy);
+      _events.add("message", eMessage);
 
   		C(hstx)    C(hsty)
   		C(gstx)    C(gsty)
@@ -395,7 +445,7 @@ List edfReader(std::string fileName)
   		C(supd_x)  C(eupd_x)
   		C(supd_y)  C(eupd_y)
       
-    DataFrame events(_events);
+    DataFrame events = _events;
 
   return List::create(
       _["samples"] = samples,
